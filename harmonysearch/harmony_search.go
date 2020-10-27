@@ -3,34 +3,9 @@
 package harmonysearch
 
 import (
-	"math"
+	ai "github.com/EmptyShadow/eltech.ai"
 	"math/rand"
 )
-
-// memory память гармоник.
-type memory [][]float64
-
-func (m memory) Row(index int) []float64 {
-	c := make([]float64, len(m[index]))
-
-	copy(m[index], c)
-
-	return c
-}
-
-func (m memory) Column(index int) []float64 {
-	c := make([]float64, len(m))
-
-	for i := 0; i < len(m); i++ {
-		c[i] = m[i][index]
-	}
-
-	return c
-}
-
-func randInRange(min, max float64) float64 {
-	return min + rand.Float64()*(max-min)
-}
 
 type Compositor struct {
 	*opts
@@ -46,16 +21,16 @@ func NewCompositor(numberOfObjects int, opts ...Opt) *Compositor {
 	return &Compositor{opts: _opts}
 }
 
-type OptiFunc func([]float64) float64
-
-func (c *Compositor) Improvisation(f OptiFunc) (bestImprovised []float64, err error) {
+func (c *Compositor) Improvisation(f ai.OptiFunc, start ai.Vector) (bestImprovised ai.Vector, err error) {
 	m, err := c.initialization()
 	if err != nil {
 		return nil, err
 	}
 
 	currentImprovisation := 0
-	bestValue := c.defaultBestValue()
+
+	bestImprovised = start
+	bestValue := f(bestImprovised)
 
 	for {
 		select {
@@ -70,48 +45,29 @@ func (c *Compositor) Improvisation(f OptiFunc) (bestImprovised []float64, err er
 		}
 
 		currentValue := f(improvised)
+		norma := bestImprovised.Diff(improvised).Norma()
 
 		if c.isSolutionBetter(currentValue, bestValue) {
 			bestImprovised = improvised
+			bestValue = currentValue
 		}
 
 		currentImprovisation++
 
-		if currentImprovisation >= c.numberOfImprovisations {
+		if currentImprovisation >= c.numberOfImprovisations || norma <= c.eps {
 			return bestImprovised, nil
 		}
 	}
 }
 
-func (c *Compositor) initialization() (memory, error) {
-	hm := make(memory, c.memorySize)
-
-	for i := 0; i < c.memorySize; i++ {
-		hm[i] = make([]float64, c.numberOfObjects)
-
-		for j := 0; j < c.numberOfObjects; j++ {
-			min, max, err := c.domainOfDefinition(i)
-			if err != nil {
-				return nil, err
-			}
-
-			hm[i][j] = randInRange(min, max)
-		}
-	}
-
-	return hm, nil
+func (c *Compositor) initialization() (ai.Matrix, error) {
+	return ai.NewMatrixWithInitFunc(c.numberOfObjects, c.memorySize, func(i, _ int) (float64, error) {
+		return ai.VectorWithDomainOfDefinitionInitFunc(c.domainOfDefinition)(i)
+	})
 }
 
-func (c *Compositor) defaultBestValue() float64 {
-	if c.isFindingMin {
-		return math.MaxFloat64
-	}
-
-	return -math.MaxFloat64
-}
-
-func (c *Compositor) improvisation(m memory) (improvised []float64, err error) {
-	improvised = make([]float64, c.numberOfObjects)
+func (c *Compositor) improvisation(m ai.Matrix) (improvised ai.Vector, err error) {
+	improvised = ai.NewVector(c.numberOfObjects)
 
 	for j := 0; j < c.numberOfObjects; j++ {
 		prob1 := rand.Float64()
@@ -139,12 +95,12 @@ func (c *Compositor) improvisation(m memory) (improvised []float64, err error) {
 			return nil, err
 		}
 
-		pitchAdjusting := rand.Float64() * (max - min) * c.pitchAdjustingRateWidth(j)
+		pitchAdjusting := rand.Float64() * ai.RandInRangeFloat64(min, max) * c.pitchAdjustingRateWidth(j)
 
-		if improvised[j]+pitchAdjusting > max && improvised[j]-pitchAdjusting >= min {
-			improvised[j] -= pitchAdjusting
-		} else if improvised[j]-pitchAdjusting < min && improvised[j] <= max {
+		if improvised[j]+pitchAdjusting <= max {
 			improvised[j] += pitchAdjusting
+		} else if improvised[j]-pitchAdjusting >= min {
+			improvised[j] -= pitchAdjusting
 		}
 	}
 
@@ -157,7 +113,7 @@ func (c *Compositor) randImprovisedElement(i int) (element float64, err error) {
 		return 0.0, err
 	}
 
-	return randInRange(min, max), nil
+	return ai.RandInRangeFloat64(min, max), nil
 }
 
 func (c *Compositor) isSolutionBetter(currentValue, bestValue float64) bool {
