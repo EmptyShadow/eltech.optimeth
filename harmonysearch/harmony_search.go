@@ -1,175 +1,169 @@
+// Пакет harmonysearch реализует алгоритм гармонического поиска.
+
 package harmonysearch
 
 import (
-	"context"
-	"fmt"
-
-	"github.com/EmptyShadow/eltech.ai"
+	"math"
+	"math/rand"
 )
 
-const (
-	DefaultNumberOfSolutionCandidates = 50
-	DefaultPitchAdjustingRate         = 1.5
-	DefaultMaxNumberOfSearches        = 1000
-)
+// memory память гармоник.
+type memory [][]float64
 
-var DefaultRandFloatFunc = ai.RangeRandFloat64Func(-100.0, 100.0)
+func (m memory) Row(index int) []float64 {
+	c := make([]float64, len(m[index]))
 
-// matrix матрица гармоник.
-type matrix struct {
-	hm [][]float64
+	copy(m[index], c)
+
+	return c
 }
 
-// newMatrix функция инициализирует матрицу гармоник.
-func newMatrix(r ai.RandFloat64Func, ndp, nsc int) (*matrix, error) {
-	hm := make([][]float64, ndp)
+func (m memory) Column(index int) []float64 {
+	c := make([]float64, len(m))
 
-	for i := 0; i < ndp; i++ {
-		hm[i] = make([]float64, nsc)
-
-		for j := 0; j < nsc; j++ {
-			rv, err := r()
-			if err != nil {
-				return nil, fmt.Errorf("failed generate rand value: %w", err)
-			}
-
-			hm[i][j] = rv
-		}
+	for i := 0; i < len(m); i++ {
+		c[i] = m[i][index]
 	}
 
-	return &matrix{hm: hm}, nil
+	return c
 }
 
-type Opt func(opts *opts)
-
-type opts struct {
-	ctx                 context.Context
-	ndp                 int     // количество размерных задач.
-	nsc                 int     // количество кандидатов на решение, по умолчанию, 50.
-	par                 float64 // скорость регулирования шага.
-	maxNumberOfSearches int     // максимальное количество итераций поиска.
-	r                   ai.RandFloat64Func
-}
-
-func Context(ctx context.Context) Opt {
-	return func(opts *opts) {
-		opts.ctx = ctx
-	}
-}
-
-func NumberOfSolutionCandidates(n int) Opt {
-	return func(opts *opts) {
-		opts.nsc = n
-	}
-}
-
-func PitchAdjustingRate(par float64) Opt {
-	return func(opts *opts) {
-		opts.par = par
-	}
-}
-
-func Randomizer(r ai.RandFloat64Func) Opt {
-	return func(opts *opts) {
-		opts.r = r
-	}
-}
-
-func defaultOpts(ndp int) *opts {
-	return &opts{
-		ctx:                 context.Background(),
-		ndp:                 ndp,
-		nsc:                 DefaultNumberOfSolutionCandidates,
-		par:                 DefaultPitchAdjustingRate,
-		maxNumberOfSearches: DefaultMaxNumberOfSearches,
-		r:                   DefaultRandFloatFunc,
-	}
-}
-
-type state struct {
-	m        *matrix
-	solution []float64
+func randInRange(min, max float64) float64 {
+	return min + rand.Float64()*(max-min)
 }
 
 type Compositor struct {
 	*opts
-	state *state
 }
 
-func NewCompositor(ndp int, opts ...Opt) *Compositor {
-	_opts := defaultOpts(ndp)
+func NewCompositor(numberOfObjects int, opts ...Opt) *Compositor {
+	_opts := defaultOpts(numberOfObjects)
 
 	for _, opt := range opts {
 		opt(_opts)
 	}
 
-	s := &state{}
-
-	return &Compositor{opts: _opts, state: s}
+	return &Compositor{opts: _opts}
 }
 
-func (c *Compositor) Optimize() ([]float64, error) {
-	if err := c.randSolutions(); err != nil {
+type OptiFunc func([]float64) float64
+
+func (c *Compositor) Improvisation(f OptiFunc) (bestImprovised []float64, err error) {
+	m, err := c.initialization()
+	if err != nil {
 		return nil, err
 	}
 
-	currentStep := 0
+	currentImprovisation := 0
+	bestValue := c.defaultBestValue()
 
 	for {
 		select {
 		case <-c.ctx.Done():
-			// TODO: возвращать промежуточное решение
-			return nil, c.ctx.Err()
+			return bestImprovised, c.ctx.Err()
 		default:
 		}
 
-		c.selection()
-		c.evaluation()
-		c.comparison()
-
-		if c.isBetterSolution() {
-			c.replacement()
-		} else {
-			c.elimination()
+		improvised, err := c.improvisation(m)
+		if err != nil {
+			return nil, err
 		}
 
-		if currentStep >= c.maxNumberOfSearches {
-			return nil, nil
+		currentValue := f(improvised)
+
+		if c.isSolutionBetter(currentValue, bestValue) {
+			bestImprovised = improvised
+		}
+
+		currentImprovisation++
+
+		if currentImprovisation >= c.numberOfImprovisations {
+			return bestImprovised, nil
 		}
 	}
 }
 
-func (c *Compositor) randSolutions() (err error) {
-	c.state.m, err = newMatrix(c.r, c.ndp, c.nsc)
+func (c *Compositor) initialization() (memory, error) {
+	hm := make(memory, c.memorySize)
+
+	for i := 0; i < c.memorySize; i++ {
+		hm[i] = make([]float64, c.numberOfObjects)
+
+		for j := 0; j < c.numberOfObjects; j++ {
+			min, max, err := c.domainOfDefinition(i)
+			if err != nil {
+				return nil, err
+			}
+
+			hm[i][j] = randInRange(min, max)
+		}
+	}
+
+	return hm, nil
+}
+
+func (c *Compositor) defaultBestValue() float64 {
+	if c.isFindingMin {
+		return math.MaxFloat64
+	}
+
+	return -math.MaxFloat64
+}
+
+func (c *Compositor) improvisation(m memory) (improvised []float64, err error) {
+	improvised = make([]float64, c.numberOfObjects)
+
+	for j := 0; j < c.numberOfObjects; j++ {
+		prob1 := rand.Float64()
+
+		if prob1 >= c.probabilityToTakeFromMemory(j) {
+			if improvised[j], err = c.randImprovisedElement(j); err != nil {
+				return nil, err
+			}
+
+			continue
+		}
+
+		prod2 := rand.Float64()
+		randDimensionIndex := rand.Intn(c.memorySize)
+
+		if prod2 >= c.probabilityToApplyPitchAdjustment(j) {
+			randDimension := m.Row(randDimensionIndex)
+			improvised[j] = randDimension[j]
+
+			continue
+		}
+
+		min, max, err := c.domainOfDefinition(j)
+		if err != nil {
+			return nil, err
+		}
+
+		pitchAdjusting := rand.Float64() * (max - min) * c.pitchAdjustingRateWidth(j)
+
+		if improvised[j]+pitchAdjusting > max && improvised[j]-pitchAdjusting >= min {
+			improvised[j] -= pitchAdjusting
+		} else if improvised[j]-pitchAdjusting < min && improvised[j] <= max {
+			improvised[j] += pitchAdjusting
+		}
+	}
+
+	return improvised, nil
+}
+
+func (c *Compositor) randImprovisedElement(i int) (element float64, err error) {
+	min, max, err := c.domainOfDefinition(i)
 	if err != nil {
-		return err
+		return 0.0, err
 	}
 
-	c.state.solution = make([]float64, c.ndp)
-
-	return nil
+	return randInRange(min, max), nil
 }
 
-func (c *Compositor) selection() {
+func (c *Compositor) isSolutionBetter(currentValue, bestValue float64) bool {
+	if c.isFindingMin {
+		return currentValue < bestValue
+	}
 
-}
-
-func (c *Compositor) evaluation() {
-
-}
-
-func (c *Compositor) comparison() {
-
-}
-
-func (c *Compositor) isBetterSolution() bool {
-
-}
-
-func (c *Compositor) elimination() {
-
-}
-
-func (c *Compositor) replacement() {
-
+	return currentValue > bestValue
 }
