@@ -23,8 +23,8 @@ func NewCompositor(numberOfObjects int, opts ...Opt) *Compositor {
 	return &Compositor{opts: _opts}
 }
 
-func (c *Compositor) Improvisation(ctx context.Context, f optimeth.OptiFunc, start optimeth.Vector) (bestImprovised optimeth.Vector,
-	bestValue float64, err error) {
+func (c *Compositor) Improvisation(ctx context.Context, f optimeth.OptiFunc,
+	start optimeth.Vector) (bestImprovised optimeth.Vector, bestValue float64, err error) {
 	m, err := c.initialization()
 	if err != nil {
 		return nil, 0.0, err // nolint
