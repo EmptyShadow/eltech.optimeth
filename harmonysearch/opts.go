@@ -1,10 +1,6 @@
 package harmonysearch
 
-import (
-	"context"
-
-	"github.com/EmptyShadow/eltech.ai"
-)
+import ai "github.com/EmptyShadow/eltech.ai"
 
 const (
 	DefaultMemorySize                        = 50
@@ -13,42 +9,36 @@ const (
 	DefaultMaxObjectValue                    = 100.0
 	DefaultProbabilityToTakeFromMemory       = 0.5
 	DefaultProbabilityToApplyPitchAdjustment = 0.5
-	DefaultPitchAdjustingRateWidth           = 1.0
+	DefaultMinStep                           = 0.2
+	DefaultMaxStep                           = 1.0
 	DefaultEps                               = 1e-6
 )
 
 var (
-	DefaultDomainOfDefinitionFunc, _             = ai.SingleDomainOfDefinition(DefaultMinObjectValue, DefaultMaxObjectValue)
+	DefaultDomainOfDefinitionFunc = ai.MustSingleDomainOfDefinition(DefaultMinObjectValue,
+		DefaultMaxObjectValue)
 	DefaultProbabilityToTakeFromMemoryFunc       = ai.StaticProbability(DefaultProbabilityToTakeFromMemory)
 	DefaultProbabilityToApplyPitchAdjustmentFunc = ai.StaticProbability(DefaultProbabilityToApplyPitchAdjustment)
-	DefaultPitchAdjustingRateWidthFunc           = ai.StaticWidth(DefaultPitchAdjustingRateWidth)
+	DefaultDomainOfDefinitionStep                = ai.MustSingleDomainOfDefinition(DefaultMinStep, DefaultMaxStep)
 )
 
 type Opt func(opts *opts)
 
 type opts struct {
-	ctx context.Context
-
 	// функция для получения области определения переменной.
 	domainOfDefinition ai.DomainOfDefinitionFunc
 	// функция для получения вероятности выбора гармоники из memory.
 	probabilityToTakeFromMemory ai.ProbabilityFunc
 	// функция для получения вероятности выполнения шага гармоники.
 	probabilityToApplyPitchAdjustment ai.ProbabilityFunc
-	// функция для получения ширины с которой может меняться гармоника.
-	pitchAdjustingRateWidth ai.StepWidth
+	// функция для получения области определения для шага.
+	domainOfDefinitionStep ai.DomainOfDefinitionFunc
 
 	memorySize             int     // размер памяти.
 	numberOfObjects        int     // количество объектов.
 	numberOfImprovisations int     // количество импровизаций.
 	eps                    float64 // приближение.
 	isFindingMin           bool    // флаг поиска минимума, а не максимума по умолчанию.
-}
-
-func Context(ctx context.Context) Opt {
-	return func(opts *opts) {
-		opts.ctx = ctx
-	}
 }
 
 // DomainOfDefinition функция для получения области определения переменной.
@@ -72,10 +62,10 @@ func ProbabilityToApplyPitchAdjustment(par ai.ProbabilityFunc) Opt {
 	}
 }
 
-// PitchAdjustingRateWidth функция для получения ширины с которой может меняться гармоника.
-func PitchAdjustingRateWidth(parw ai.StepWidth) Opt {
+// DomainOfDefinitionStep функция для получения области определения для шага.
+func DomainOfDefinitionStep(dds ai.DomainOfDefinitionFunc) Opt {
 	return func(opts *opts) {
-		opts.pitchAdjustingRateWidth = parw
+		opts.domainOfDefinitionStep = dds
 	}
 }
 
@@ -109,11 +99,10 @@ func FindMin() Opt {
 
 func defaultOpts(numberOfObjects int) *opts {
 	return &opts{
-		ctx:                               context.Background(),
 		domainOfDefinition:                DefaultDomainOfDefinitionFunc,
 		probabilityToTakeFromMemory:       DefaultProbabilityToTakeFromMemoryFunc,
 		probabilityToApplyPitchAdjustment: DefaultProbabilityToApplyPitchAdjustmentFunc,
-		pitchAdjustingRateWidth:           DefaultPitchAdjustingRateWidthFunc,
+		domainOfDefinitionStep:            DefaultDomainOfDefinitionStep,
 		memorySize:                        DefaultMemorySize,
 		numberOfObjects:                   numberOfObjects,
 		numberOfImprovisations:            DefaultNumberOfImprovisations,

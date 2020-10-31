@@ -3,8 +3,10 @@
 package harmonysearch
 
 import (
-	ai "github.com/EmptyShadow/eltech.ai"
+	"context"
 	"math/rand"
+
+	ai "github.com/EmptyShadow/eltech.ai"
 )
 
 type Compositor struct {
@@ -21,27 +23,28 @@ func NewCompositor(numberOfObjects int, opts ...Opt) *Compositor {
 	return &Compositor{opts: _opts}
 }
 
-func (c *Compositor) Improvisation(f ai.OptiFunc, start ai.Vector) (bestImprovised ai.Vector, err error) {
+func (c *Compositor) Improvisation(ctx context.Context, f ai.OptiFunc, start ai.Vector) (bestImprovised ai.Vector,
+	bestValue float64, err error) {
 	m, err := c.initialization()
 	if err != nil {
-		return nil, err
+		return nil, 0.0, err // nolint
 	}
 
 	currentImprovisation := 0
 
 	bestImprovised = start
-	bestValue := f(bestImprovised)
+	bestValue = f(bestImprovised)
 
 	for {
 		select {
-		case <-c.ctx.Done():
-			return bestImprovised, c.ctx.Err()
+		case <-ctx.Done():
+			return bestImprovised, bestValue, ctx.Err()
 		default:
 		}
 
 		improvised, err := c.improvisation(m)
 		if err != nil {
-			return nil, err
+			return nil, 0.0, err // nolint
 		}
 
 		currentValue := f(improvised)
@@ -54,8 +57,8 @@ func (c *Compositor) Improvisation(f ai.OptiFunc, start ai.Vector) (bestImprovis
 
 		currentImprovisation++
 
-		if currentImprovisation >= c.numberOfImprovisations || norma <= c.eps {
-			return bestImprovised, nil
+		if currentImprovisation >= c.numberOfImprovisations || norma < c.eps {
+			return bestImprovised, bestValue, nil
 		}
 	}
 }
@@ -90,18 +93,14 @@ func (c *Compositor) improvisation(m ai.Matrix) (improvised ai.Vector, err error
 			continue
 		}
 
-		min, max, err := c.domainOfDefinition(j)
+		min, max, err := c.domainOfDefinitionStep(j)
 		if err != nil {
 			return nil, err
 		}
 
-		pitchAdjusting := rand.Float64() * ai.RandInRangeFloat64(min, max) * c.pitchAdjustingRateWidth(j)
+		step := ai.RandInRangeFloat64(-1.0, 1.0) * (max - min)
 
-		if improvised[j]+pitchAdjusting <= max {
-			improvised[j] += pitchAdjusting
-		} else if improvised[j]-pitchAdjusting >= min {
-			improvised[j] -= pitchAdjusting
-		}
+		improvised[j] += step
 	}
 
 	return improvised, nil
@@ -110,7 +109,7 @@ func (c *Compositor) improvisation(m ai.Matrix) (improvised ai.Vector, err error
 func (c *Compositor) randImprovisedElement(i int) (element float64, err error) {
 	min, max, err := c.domainOfDefinition(i)
 	if err != nil {
-		return 0.0, err
+		return 0.0, err // nolint
 	}
 
 	return ai.RandInRangeFloat64(min, max), nil

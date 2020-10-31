@@ -25,6 +25,7 @@ linters:
     - gochecknoglobals
     - goerr113
     - godot
+    - gosec
 
 issues:
   exclude-rules:

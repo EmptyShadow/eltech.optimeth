@@ -44,7 +44,7 @@ func DifferentDomainOfDefinition(minmaxValues [][2]float64) (DomainOfDefinitionF
 
 	return func(objIndex int) (float64, float64, error) {
 		if objIndex >= len(minmaxValues) {
-			return 0.0, 0.0, ErrOutOfRange
+			return 0.0, 0.0, ErrOutOfRange // nolint
 		}
 
 		return minmaxValues[objIndex][0], minmaxValues[objIndex][1], nil
@@ -68,18 +68,24 @@ func RandProbability() ProbabilityFunc {
 	}
 }
 
-// StepWidth функция должна возвращать ширину шага [0,1] для объекта.
-type StepWidth func(objIndex int) float64
+// StepFunc функция должна возвращать ширину шага [0,1] для объекта.
+type StepFunc func(objIndex int) float64
 
-func StaticWidth(v float64) StepWidth {
+func StaticStep(v float64) StepFunc {
 	return func(_ int) float64 {
 		return v
 	}
 }
 
-func RandWidth() StepWidth {
+func RandStep() StepFunc {
 	return func(_ int) float64 {
 		return rand.Float64()
+	}
+}
+
+func RandInRangeStep(min, max float64) StepFunc {
+	return func(_ int) float64 {
+		return RandInRangeFloat64(min, max)
 	}
 }
 
@@ -91,7 +97,7 @@ func VectorWithDomainOfDefinitionInitFunc(definitionFunc DomainOfDefinitionFunc)
 	return func(i int) (float64, error) {
 		min, max, err := definitionFunc(i)
 		if err != nil {
-			return 0.0, err
+			return 0.0, err // nolint
 		}
 
 		return RandInRangeFloat64(min, max), nil
