@@ -1,3 +1,5 @@
-module github.com/EmptyShadow/eltech.ai
+module github.com/EmptyShadow/eltech.optimeth
 
 go 1.15
+
+require github.com/stretchr/testify v1.6.1
