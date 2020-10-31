@@ -1,4 +1,4 @@
-package ai
+package optimeth
 
 import (
 	"errors"

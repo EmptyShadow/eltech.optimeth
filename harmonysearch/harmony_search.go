@@ -6,7 +6,7 @@ import (
 	"context"
 	"math/rand"
 
-	ai "github.com/EmptyShadow/eltech.ai"
+	optimeth "github.com/EmptyShadow/eltech.optimeth"
 )
 
 type Compositor struct {
@@ -23,7 +23,7 @@ func NewCompositor(numberOfObjects int, opts ...Opt) *Compositor {
 	return &Compositor{opts: _opts}
 }
 
-func (c *Compositor) Improvisation(ctx context.Context, f ai.OptiFunc, start ai.Vector) (bestImprovised ai.Vector,
+func (c *Compositor) Improvisation(ctx context.Context, f optimeth.OptiFunc, start optimeth.Vector) (bestImprovised optimeth.Vector,
 	bestValue float64, err error) {
 	m, err := c.initialization()
 	if err != nil {
@@ -63,14 +63,14 @@ func (c *Compositor) Improvisation(ctx context.Context, f ai.OptiFunc, start ai.
 	}
 }
 
-func (c *Compositor) initialization() (ai.Matrix, error) {
-	return ai.NewMatrixWithInitFunc(c.numberOfObjects, c.memorySize, func(i, _ int) (float64, error) {
-		return ai.VectorWithDomainOfDefinitionInitFunc(c.domainOfDefinition)(i)
+func (c *Compositor) initialization() (optimeth.Matrix, error) {
+	return optimeth.NewMatrixWithInitFunc(c.numberOfObjects, c.memorySize, func(i, _ int) (float64, error) {
+		return optimeth.VectorWithDomainOfDefinitionInitFunc(c.domainOfDefinition)(i)
 	})
 }
 
-func (c *Compositor) improvisation(m ai.Matrix) (improvised ai.Vector, err error) {
-	improvised = ai.NewVector(c.numberOfObjects)
+func (c *Compositor) improvisation(m optimeth.Matrix) (improvised optimeth.Vector, err error) {
+	improvised = optimeth.NewVector(c.numberOfObjects)
 
 	for j := 0; j < c.numberOfObjects; j++ {
 		prob1 := rand.Float64()
@@ -98,7 +98,7 @@ func (c *Compositor) improvisation(m ai.Matrix) (improvised ai.Vector, err error
 			return nil, err
 		}
 
-		step := ai.RandInRangeFloat64(-1.0, 1.0) * (max - min)
+		step := optimeth.RandInRangeFloat64(-1.0, 1.0) * (max - min)
 
 		improvised[j] += step
 	}
@@ -112,7 +112,7 @@ func (c *Compositor) randImprovisedElement(i int) (element float64, err error) {
 		return 0.0, err // nolint
 	}
 
-	return ai.RandInRangeFloat64(min, max), nil
+	return optimeth.RandInRangeFloat64(min, max), nil
 }
 
 func (c *Compositor) isSolutionBetter(currentValue, bestValue float64) bool {

@@ -1,4 +1,4 @@
-module github.com/EmptyShadow/eltech.ai
+module github.com/EmptyShadow/eltech.optimeth
 
 go 1.15
 

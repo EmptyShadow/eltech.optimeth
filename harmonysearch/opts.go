@@ -1,6 +1,6 @@
 package harmonysearch
 
-import ai "github.com/EmptyShadow/eltech.ai"
+import optimeth "github.com/EmptyShadow/eltech.optimeth"
 
 const (
 	DefaultMemorySize                        = 50
@@ -15,24 +15,24 @@ const (
 )
 
 var (
-	DefaultDomainOfDefinitionFunc = ai.MustSingleDomainOfDefinition(DefaultMinObjectValue,
+	DefaultDomainOfDefinitionFunc = optimeth.MustSingleDomainOfDefinition(DefaultMinObjectValue,
 		DefaultMaxObjectValue)
-	DefaultProbabilityToTakeFromMemoryFunc       = ai.StaticProbability(DefaultProbabilityToTakeFromMemory)
-	DefaultProbabilityToApplyPitchAdjustmentFunc = ai.StaticProbability(DefaultProbabilityToApplyPitchAdjustment)
-	DefaultDomainOfDefinitionStep                = ai.MustSingleDomainOfDefinition(DefaultMinStep, DefaultMaxStep)
+	DefaultProbabilityToTakeFromMemoryFunc       = optimeth.StaticProbability(DefaultProbabilityToTakeFromMemory)
+	DefaultProbabilityToApplyPitchAdjustmentFunc = optimeth.StaticProbability(DefaultProbabilityToApplyPitchAdjustment)
+	DefaultDomainOfDefinitionStep                = optimeth.MustSingleDomainOfDefinition(DefaultMinStep, DefaultMaxStep)
 )
 
 type Opt func(opts *opts)
 
 type opts struct {
 	// функция для получения области определения переменной.
-	domainOfDefinition ai.DomainOfDefinitionFunc
+	domainOfDefinition optimeth.DomainOfDefinitionFunc
 	// функция для получения вероятности выбора гармоники из memory.
-	probabilityToTakeFromMemory ai.ProbabilityFunc
+	probabilityToTakeFromMemory optimeth.ProbabilityFunc
 	// функция для получения вероятности выполнения шага гармоники.
-	probabilityToApplyPitchAdjustment ai.ProbabilityFunc
+	probabilityToApplyPitchAdjustment optimeth.ProbabilityFunc
 	// функция для получения области определения для шага.
-	domainOfDefinitionStep ai.DomainOfDefinitionFunc
+	domainOfDefinitionStep optimeth.DomainOfDefinitionFunc
 
 	memorySize             int     // размер памяти.
 	numberOfObjects        int     // количество объектов.
@@ -42,28 +42,28 @@ type opts struct {
 }
 
 // DomainOfDefinition функция для получения области определения переменной.
-func DomainOfDefinition(r ai.DomainOfDefinitionFunc) Opt {
+func DomainOfDefinition(r optimeth.DomainOfDefinitionFunc) Opt {
 	return func(opts *opts) {
 		opts.domainOfDefinition = r
 	}
 }
 
 // ProbabilityToTakeFromMemory функция для получения вероятности выбора гармоники из memory.
-func ProbabilityToTakeFromMemory(cr ai.ProbabilityFunc) Opt {
+func ProbabilityToTakeFromMemory(cr optimeth.ProbabilityFunc) Opt {
 	return func(opts *opts) {
 		opts.probabilityToTakeFromMemory = cr
 	}
 }
 
 // ProbabilityToApplyPitchAdjustment функция для получения вероятности выполнения шага гармоники.
-func ProbabilityToApplyPitchAdjustment(par ai.ProbabilityFunc) Opt {
+func ProbabilityToApplyPitchAdjustment(par optimeth.ProbabilityFunc) Opt {
 	return func(opts *opts) {
 		opts.probabilityToApplyPitchAdjustment = par
 	}
 }
 
 // DomainOfDefinitionStep функция для получения области определения для шага.
-func DomainOfDefinitionStep(dds ai.DomainOfDefinitionFunc) Opt {
+func DomainOfDefinitionStep(dds optimeth.DomainOfDefinitionFunc) Opt {
 	return func(opts *opts) {
 		opts.domainOfDefinitionStep = dds
 	}

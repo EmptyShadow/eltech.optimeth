@@ -3,12 +3,12 @@ package harmonysearch_test
 import (
 	"context"
 	"fmt"
-	ai "github.com/EmptyShadow/eltech.ai"
 	"math"
 	"testing"
 
-	"github.com/EmptyShadow/eltech.ai/harmonysearch"
-	"github.com/EmptyShadow/eltech.ai/testdata"
+	optimeth "github.com/EmptyShadow/eltech.optimeth"
+	"github.com/EmptyShadow/eltech.optimeth/harmonysearch"
+	"github.com/EmptyShadow/eltech.optimeth/testdata"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -22,10 +22,10 @@ type test struct {
 }
 
 type opts struct {
-	starts                            []ai.Vector
-	probabilityToTakeFromMemory       ai.ProbabilityFunc
-	probabilityToApplyPitchAdjustment ai.ProbabilityFunc
-	domainOfDefinitionStep            ai.DomainOfDefinitionFunc
+	starts                            []optimeth.Vector
+	probabilityToTakeFromMemory       optimeth.ProbabilityFunc
+	probabilityToApplyPitchAdjustment optimeth.ProbabilityFunc
+	domainOfDefinitionStep            optimeth.DomainOfDefinitionFunc
 	memorySize                        int
 	numberOfImprovisations            int
 	eps                               float64
@@ -38,10 +38,10 @@ func Test_Compositor_Improvisation(t *testing.T) {
 			f:                testdata.MatiasFunc,
 			minApproximation: 1e-6,
 			opts: opts{
-				starts:                            []ai.Vector{{10.0, 10.0}, {9.0, 9.0}, {2.0, 7.8}},
-				probabilityToTakeFromMemory:       ai.StaticProbability(0.3),
-				probabilityToApplyPitchAdjustment: ai.StaticProbability(0.9),
-				domainOfDefinitionStep:            ai.MustSingleDomainOfDefinition(0.1, 1.0),
+				starts:                            []optimeth.Vector{{10.0, 10.0}, {9.0, 9.0}, {2.0, 7.8}},
+				probabilityToTakeFromMemory:       optimeth.StaticProbability(0.3),
+				probabilityToApplyPitchAdjustment: optimeth.StaticProbability(0.9),
+				domainOfDefinitionStep:            optimeth.MustSingleDomainOfDefinition(0.1, 1.0),
 				memorySize:                        100,
 				numberOfImprovisations:            100_000_000,
 				eps:                               1e-3,
@@ -52,10 +52,10 @@ func Test_Compositor_Improvisation(t *testing.T) {
 			f:                testdata.SpheresFunc,
 			minApproximation: 1e-5,
 			opts: opts{
-				starts:                            []ai.Vector{{100.0, 100.0}, {-100.0, -100.0}, {2.0, -10.0}},
-				probabilityToTakeFromMemory:       ai.StaticProbability(0.3),
-				probabilityToApplyPitchAdjustment: ai.StaticProbability(0.9),
-				domainOfDefinitionStep:            ai.MustSingleDomainOfDefinition(0.1, 2.0),
+				starts:                            []optimeth.Vector{{100.0, 100.0}, {-100.0, -100.0}, {2.0, -10.0}},
+				probabilityToTakeFromMemory:       optimeth.StaticProbability(0.3),
+				probabilityToApplyPitchAdjustment: optimeth.StaticProbability(0.9),
+				domainOfDefinitionStep:            optimeth.MustSingleDomainOfDefinition(0.1, 2.0),
 				memorySize:                        100,
 				numberOfImprovisations:            100_000_000,
 				eps:                               1e-3,
@@ -66,10 +66,10 @@ func Test_Compositor_Improvisation(t *testing.T) {
 			f:                testdata.Levi13Func,
 			minApproximation: 1e-3,
 			opts: opts{
-				starts:                            []ai.Vector{{10.0, 10.0}, {9.0, 9.0}, {2.0, 7.8}},
-				probabilityToTakeFromMemory:       ai.StaticProbability(0.3),
-				probabilityToApplyPitchAdjustment: ai.StaticProbability(0.9),
-				domainOfDefinitionStep:            ai.MustSingleDomainOfDefinition(0.1, 2.0),
+				starts:                            []optimeth.Vector{{10.0, 10.0}, {9.0, 9.0}, {2.0, 7.8}},
+				probabilityToTakeFromMemory:       optimeth.StaticProbability(0.3),
+				probabilityToApplyPitchAdjustment: optimeth.StaticProbability(0.9),
+				domainOfDefinitionStep:            optimeth.MustSingleDomainOfDefinition(0.1, 2.0),
 				memorySize:                        100,
 				numberOfImprovisations:            100_000_000,
 				eps:                               1e-3,
