@@ -1,3 +1,6 @@
+# github.com/Knetic/govaluate v3.0.0+incompatible
+## explicit
+github.com/Knetic/govaluate
 # github.com/davecgh/go-spew v1.1.0
 github.com/davecgh/go-spew/spew
 # github.com/pmezard/go-difflib v1.0.0
@@ -5,5 +8,41 @@ github.com/pmezard/go-difflib/difflib
 # github.com/stretchr/testify v1.6.1
 ## explicit
 github.com/stretchr/testify/assert
+# golang.org/x/exp v0.0.0-20201008143054-e3b2a7f2fdc7
+## explicit
+golang.org/x/exp/rand
+# golang.org/x/tools v0.0.0-20201105220310-78b158585360
+## explicit
+golang.org/x/tools/container/intsets
+# gonum.org/v1/gonum v0.8.1
+## explicit
+gonum.org/v1/gonum/blas
+gonum.org/v1/gonum/blas/blas64
+gonum.org/v1/gonum/blas/cblas128
+gonum.org/v1/gonum/blas/gonum
+gonum.org/v1/gonum/diff/fd
+gonum.org/v1/gonum/floats
+gonum.org/v1/gonum/floats/scalar
+gonum.org/v1/gonum/internal/asm/c128
+gonum.org/v1/gonum/internal/asm/c64
+gonum.org/v1/gonum/internal/asm/f32
+gonum.org/v1/gonum/internal/asm/f64
+gonum.org/v1/gonum/internal/cmplx64
+gonum.org/v1/gonum/internal/math32
+gonum.org/v1/gonum/lapack
+gonum.org/v1/gonum/lapack/gonum
+gonum.org/v1/gonum/lapack/lapack64
+gonum.org/v1/gonum/mat
+gonum.org/v1/gonum/mathext
+gonum.org/v1/gonum/mathext/internal/amos
+gonum.org/v1/gonum/mathext/internal/cephes
+gonum.org/v1/gonum/mathext/internal/gonum
+gonum.org/v1/gonum/optimize
+gonum.org/v1/gonum/optimize/functions
+gonum.org/v1/gonum/spatial/r1
+gonum.org/v1/gonum/stat
+gonum.org/v1/gonum/stat/combin
+gonum.org/v1/gonum/stat/distmv
+gonum.org/v1/gonum/stat/distuv
 # gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
 gopkg.in/yaml.v3

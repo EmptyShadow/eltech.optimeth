@@ -26,6 +26,9 @@ linters:
     - goerr113
     - godot
     - gosec
+    - exhaustivestruct
+    - exhaustive
+    - wrapcheck
 
 issues:
   exclude-rules:
