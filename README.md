@@ -1,3 +1,3 @@
 # Библиотека с различными алгоритмами оптимизации поиска
 
-- [Гармонический поиск: github.com/EmptyShadow/ai/harmonysearch](./harmonysearch)
+- [Инструкция по парсеру](https://github.com/Knetic/govaluate/blob/master/MANUAL.md).
